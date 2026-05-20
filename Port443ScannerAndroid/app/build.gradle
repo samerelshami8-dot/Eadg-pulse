@@ -1,0 +1,42 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'ai.arena.portscanner'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'ai.arena.portscanner'
+        minSdk 23
+        targetSdk 35
+        versionCode 10
+        versionName '1.6.1'
+        resourceConfigurations += ['en', 'fa']
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            // No code shrinking for now to keep build simple; can enable later with proguard rules.
+        }
+        debug {
+            applicationIdSuffix '.debug'
+            versionNameSuffix '-debug'
+        }
+    }
+
+    packaging {
+        resources {
+            excludes += ['META-INF/AL2.0', 'META-INF/LGPL2.1', 'META-INF/LICENSE*', 'META-INF/NOTICE*']
+        }
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}
