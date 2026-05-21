@@ -1,4 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">EdgePulse</string>
+
+    <!-- v2.0 navigation -->
+    <string name="nav_scan">اسکن</string>
+    <string name="nav_profiles">پروفایل</string>
+    <string name="nav_results">نتایج</string>
+    <string name="nav_advanced">پیشرفته</string>
+
+    <!-- Scan -->
+    <string name="scan_target_label">لیست هدف</string>
+    <string name="scan_start">شروع اسکن</string>
+    <string name="scan_stop">توقف</string>
+    <string name="scan_engine_quick">Quick Scan</string>
+    <string name="scan_engine_pair">Pair Test</string>
+
+    <!-- Results -->
+    <string name="results_filter_all">همه</string>
+    <string name="results_filter_ok">OK</string>
+    <string name="results_sort">مرتب‌سازی</string>
+
+    <!-- Profiles -->
+    <string name="profile_default">Default</string>
+
+    <!-- Advanced -->
+    <string name="advanced_save">ذخیره</string>
+    <string name="advanced_reset">بازنشانی</string>
 </resources>

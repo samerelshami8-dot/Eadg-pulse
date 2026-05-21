@@ -1,3 +1,19 @@
+# EdgePulse اندروید — نسخه 2.0.0 Pipeline Core
+
+## v2.0 (versionCode 20)
+
+- **هسته اسکنر pipeline چندمرحله‌ای**: Bogon → TCP fast screen → TLS+ALPN+cert → HTTP Host/Path → Two-stage speed → Scoring → Subnet diversity.
+- **رابط ۴ صفحه‌ای با bottom navigation**: 📡 اسکن، 🗂️ پروفایل، 📊 نتایج، ⚙️ پیشرفته.
+- **شناسایی CDN**: Cloudflare، Fastly، Akamai، CloudFront، Google، BunnyCDN، ArvanCloud از روی header های پاسخ + PoP + cache status.
+- **DNS-over-HTTPS** برای تبدیل دامنه به IP (Cloudflare/Google/Quad9).
+- **پروفایل JSON** با ذخیره SharedPreferences (`edgepulse_profiles_v2`) و export/import.
+- **خروجی TXT / CSV / JSON** با file picker سیستم.
+- **فرمول امتیازدهی جدید** با successRate، throughput، penalty، bonus ALPN h2 و CDN شناخته‌شده.
+
+برای جزئیات و معماری: [`V2_UPGRADE_FA.md`](V2_UPGRADE_FA.md).
+
+---
+
 # EdgePulse اندروید - نسخه 1.6.0 Intelligence Core
 
 این نسخه علاوه بر اسکن TCP/TLS و تست سرعت واقعی، با حالت Deep Analysis و تحلیل پایداری هم ارتقا داده شده تا برای تحلیل کیفیت شبکه حرفه‌ای‌تر باشد.
