@@ -173,8 +173,9 @@ final class AdvancedPage {
         b.tlsTimeoutMs(intOr(tlsTimeoutInput, 3000));
         b.httpTimeoutMs(intOr(httpTimeoutInput, 4000));
         b.concurrency(clamp(intOr(concurrencyInput, 80), 1, 400));
-        b.attempts(clamp(intOr(attemptsInput, 2), 1, 5));
-        b.minSuccess(clamp(intOr(minSuccessInput, 1), 1, 5));
+        int effAttempts = clamp(intOr(attemptsInput, 2), 1, 5);
+        b.attempts(effAttempts);
+        b.minSuccess(clamp(intOr(minSuccessInput, 1), 1, effAttempts));
         b.verifyNamesCsv(verifyNamesInput.getText().toString());
         b.alpnPreferH2(alpnPreferH2Box.isChecked());
         b.speedEnabled(speedEnabledBox.isChecked());

@@ -73,26 +73,48 @@ final class SpeedProbe {
             out.flush();
 
             InputStream in = ssl.getInputStream();
-            BufferedReader hr = new BufferedReader(new InputStreamReader(in, "ISO-8859-1"));
-            String statusLine = hr.readLine();
-            long firstByteAt = System.nanoTime();
-            int ttfb = (int) ((firstByteAt - t0) / 1_000_000L);
-            int statusCode = parseStatus(statusLine);
-            // Drain headers
-            String h;
-            while ((h = hr.readLine()) != null) {
-                if (h.isEmpty()) break;
+            // Read raw bytes for both headers and body so byte accounting stays
+            // honest — using a BufferedReader for headers would prefetch body
+            // bytes into the reader's internal buffer and undercount throughput.
+            byte[] readBuf = new byte[4096];
+            java.io.ByteArrayOutputStream preBuf = new java.io.ByteArrayOutputStream(1024);
+            long firstByteAt = 0L;
+            int headerEnd = -1;
+            int r;
+            while (headerEnd < 0) {
+                r = in.read(readBuf);
+                if (r == -1) break;
+                if (firstByteAt == 0L) firstByteAt = System.nanoTime();
+                int scanFrom = Math.max(0, preBuf.size() - 3);
+                preBuf.write(readBuf, 0, r);
+                byte[] cur = preBuf.toByteArray();
+                for (int i = scanFrom; i + 3 < cur.length; i++) {
+                    if (cur[i] == '\r' && cur[i + 1] == '\n' && cur[i + 2] == '\r' && cur[i + 3] == '\n') {
+                        headerEnd = i + 4;
+                        break;
+                    }
+                }
+                if (headerEnd < 0 && preBuf.size() > 64 * 1024) break; // header too large
             }
+            int ttfb = firstByteAt == 0L ? -1 : (int) ((firstByteAt - t0) / 1_000_000L);
+            if (headerEnd < 0) {
+                return new Result(false, 0.0, ttfb, ttfb, 0, "no-http-header");
+            }
+            byte[] preBytes = preBuf.toByteArray();
+            String headerText = new String(preBytes, 0, headerEnd - 4, "ISO-8859-1");
+            int firstNewline = headerText.indexOf("\r\n");
+            String statusLine = firstNewline >= 0 ? headerText.substring(0, firstNewline) : headerText;
+            int statusCode = parseStatus(statusLine);
             if (statusCode < 200 || statusCode >= 400) {
                 return new Result(false, 0.0, ttfb, ttfb, 0, "http-" + statusCode);
             }
 
-            // Read body via the raw socket to count bytes correctly
-            byte[] buf = new byte[4096];
-            int total = 0;
-            int read;
-            while (total < targetBytes && (read = in.read(buf, 0, Math.min(buf.length, targetBytes - total))) != -1) {
-                total += read;
+            // Body bytes already pulled in the same read as the headers count.
+            int total = Math.min(preBytes.length - headerEnd, targetBytes);
+            while (total < targetBytes) {
+                int n = in.read(readBuf, 0, Math.min(readBuf.length, targetBytes - total));
+                if (n == -1) break;
+                total += n;
             }
             int elapsed = (int) ((System.nanoTime() - t0) / 1_000_000L);
             double mbps = mbpsOf(total, elapsed);
@@ -148,7 +170,7 @@ final class SpeedProbe {
             BufferedReader hr = new BufferedReader(new InputStreamReader(in, "ISO-8859-1"));
             String statusLine = hr.readLine();
             int statusCode = parseStatus(statusLine);
-            if (statusCode < 200 || statusCode >= 500) {
+            if (statusCode < 200 || statusCode >= 400) {
                 return new Result(false, 0.0, -1, uploadMs, sent, "http-" + statusCode);
             }
             double mbps = mbpsOf(sent, uploadMs);
